@@ -1,14 +1,33 @@
 import * as yup from 'yup';
+import i18next from 'i18next';
 import watchedState from './view.js';
+import en from './locales/en.js';
 
 export default () => {
+  const i18nInstance = i18next.createInstance();
+
+  i18nInstance.init({
+    lng: 'en',
+    debug: false,
+    resources: { en },
+  }).then(() => {
+    yup.setLocale({
+      mixed: {
+        notOneOf: i18nInstance.t('errors.dublicateUrl'),
+      },
+      string: {
+        url: i18nInstance.t('errors.invalidUrl'),
+      },
+    });
+  });
+
   const formEl = document.querySelector('form');
 
   const validateUrl = () => {
     const schema = yup
       .string()
-      .url('Link must be a valid URL')
-      .notOneOf(watchedState.feedList, 'RSS already exists');
+      .url()
+      .notOneOf(watchedState.feedList);
 
     return schema.validate(watchedState.urlInput)
       .then((url) => {

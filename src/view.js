@@ -1,25 +1,138 @@
 import onChange from 'on-change';
+import i18next from 'i18next';
 import state from './state.js';
+import en from './locales/en.js';
+
+const i18nInstance = i18next.createInstance();
+
+i18nInstance.init({
+  lng: 'en',
+  debug: false,
+  resources: { en },
+});
+
+const elements = {
+  form: document.querySelector('form'),
+  inputField: document.getElementById('url-input'),
+  addButton: document.querySelector('button[aria-label=add]'),
+  feedbackP: document.querySelector('.feedback'),
+  feeds: document.querySelector('.feeds'),
+  posts: document.querySelector('.posts'),
+};
+
+const handleProcessState = (processState) => {
+  switch (processState) {
+    case 'fetching':
+      elements.addButton.disabled = true;
+      break;
+
+    case 'error':
+      watchedState.form.errors.forEach((errorMessage) => {
+        elements.addButton.disabled = false;
+        elements.inputField.classList.add('is-invalid');
+
+        elements.feedbackP.classList.remove('text-success');
+        elements.feedbackP.classList.add('text-danger');
+        elements.feedbackP.textContent = errorMessage;
+      });
+      break;
+
+    case 'fetched':
+      elements.addButton.disabled = false;
+      elements.inputField.classList.remove('is-invalid');
+
+      elements.feedbackP.classList.remove('text-danger');
+      elements.feedbackP.classList.add('text-success');
+      elements.feedbackP.textContent = i18nInstance.t('success');
+
+      elements.form.reset();
+      elements.inputField.focus();
+      break;
+
+    default:
+      break;
+  }
+};
+
+const renderFeeds = () => {
+  elements.feeds.innerHTML = '';
+
+  const divEl = document.createElement('div');
+  divEl.classList.add('card', 'border-0');
+  elements.feeds.append(divEl);
+
+  const divTitleEl = document.createElement('div');
+  divTitleEl.classList.add('card-body');
+  divEl.append(divTitleEl);
+
+  const h2El = document.createElement('h2');
+  h2El.classList.add('card-title', 'h4');
+  h2El.textContent = i18nInstance.t('feeds');
+  divTitleEl.append(h2El);
+
+  const ulEl = document.createElement('ul');
+  ulEl.classList.add('list-group', 'border-0', 'rounded-0');
+
+  watchedState.feeds.forEach((feed) => {
+    const liEl = document.createElement('li');
+    liEl.classList.add('list-group-item', 'border-0', 'border-end-0')
+    liEl.innerHTML = `
+    <h3 class="h6 m-0">${feed.title}</h3>
+    <p class="m-0 small text-black-50">${feed.description}</p>
+    `;
+    ulEl.prepend(liEl);
+  });
+
+  divEl.append(ulEl);
+};
+
+const renderPosts = () => {
+  elements.posts.innerHTML = '';
+
+  const divEl = document.createElement('div');
+  divEl.classList.add('card', 'border-0');
+  elements.posts.append(divEl);
+
+  const divTitleEl = document.createElement('div');
+  divTitleEl.classList.add('card-body');
+  divEl.append(divTitleEl);
+
+  const h2El = document.createElement('h2');
+  h2El.classList.add('card-title', 'h4');
+  h2El.textContent = i18nInstance.t('posts');
+  divTitleEl.append(h2El);
+
+  const ulEl = document.createElement('ul');
+  ulEl.classList.add('list-group', 'border-0', 'rounded-0');
+
+  watchedState.posts.forEach((post) => {
+    const liEl = document.createElement('li');
+    liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0')
+    liEl.innerHTML = `
+    <a href="${post.url}" class="fw-bold" data-id="${post.id}" target="_blank" rel="noopener noreferrer">${post.title}</a>
+    `;
+    ulEl.prepend(liEl);
+  });
+
+  divEl.append(ulEl);
+};
 
 const watchedState = onChange(state, (path, value) => {
-  const inputField = document.getElementById('url-input');
-  const formEl = document.querySelector('form');
-  const feedbackPEl = document.querySelector('.feedback');
+  switch (path) {
+    case 'form.processState':
+      handleProcessState(value);
+      break;
 
-  inputField.classList.remove('is-invalid');
-  feedbackPEl.textContent = '';
+    case 'feeds':
+      renderFeeds();
+      break;
 
-  if (path === 'errors') {
-    if (value.length !== 0) {
-      watchedState.errors.forEach((errorMessage) => {
-        inputField.classList.add('is-invalid');
+    case 'posts':
+      renderPosts();
+      break;
 
-        feedbackPEl.textContent = errorMessage;
-      });
-    } else {
-      formEl.reset();
-      inputField.focus();
-    }
+    default:
+      break;
   }
 });
 

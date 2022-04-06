@@ -1,6 +1,9 @@
 export default {
-  valid: true,
-  errors: [],
-  urlField: '',
-  feedList: [],
+  form: {
+    errors: [],
+    currentUrl: '',
+    processState: 'filling',
+  },
+  feeds: [],
+  posts: [],
 };

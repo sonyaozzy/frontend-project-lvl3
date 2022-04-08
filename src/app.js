@@ -24,6 +24,90 @@ export default () => {
     });
   });
 
+  const makeRequest = (url) => {
+    axios
+      .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+      .then((response) => {
+        const data = parse(response.data.contents);
+
+        if (data.querySelector('rss')) {
+          const feedTitle = data.querySelector('channel > title').textContent;
+          const feedDescription = data.querySelector('channel > description').textContent;
+          const feedId = _.uniqueId();
+
+          const feed = {
+            url,
+            title: feedTitle,
+            description: feedDescription,
+            id: feedId,
+          };
+
+          watchedState.feeds.push(feed);
+
+          const postsEls = data.querySelectorAll('item');
+
+          postsEls.forEach((postEl) => {
+            const postUrl = postEl.querySelector('link').textContent;
+            const postTitle = postEl.querySelector('title').textContent;
+            const postDescription = postEl.querySelector('description').textContent;
+
+            const post = {
+              url: postUrl,
+              title: postTitle,
+              description: postDescription,
+              id: _.uniqueId(),
+              feedId,
+            };
+
+            watchedState.posts.push(post);
+          });
+          watchedState.form.processState = 'fetched';
+          watchedState.form.errors = [];
+        } else {
+          watchedState.form.errors = [i18nInstance.t('errors.notContainValidRss')];
+          watchedState.form.processState = 'error';
+        }
+      })
+      .catch((err) => {
+        watchedState.form.errors = [err];
+        watchedState.form.processState = 'error';
+      });
+  };
+
+  const addNewPosts = (url) => {
+    axios
+      .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+      .then((response) => {
+        const data = parse(response.data.contents);
+
+        const postsEls = data.querySelectorAll('item');
+
+        postsEls.forEach((postEl) => {
+          const postUrl = postEl.querySelector('link').textContent;
+
+          if (!watchedState.posts.some((post) => post.url === postUrl)) {
+            const postDescription = postEl.querySelector('description').textContent;
+            const postTitle = postEl.querySelector('title').textContent;
+
+            const feedId = watchedState
+              .feeds
+              .find((feed) => feed.url === url)
+              .id;
+
+            const post = {
+              url: postUrl,
+              title: postTitle,
+              description: postDescription,
+              id: _.uniqueId(),
+              feedId,
+            };
+
+            watchedState.posts.push(post);
+          }
+        });
+      });
+  };
+
   const formEl = document.querySelector('form');
 
   formEl.addEventListener('submit', (e) => {
@@ -32,62 +116,25 @@ export default () => {
     watchedState.form.processState = 'validating';
     const formData = new FormData(e.target);
     const url = formData.get('url');
-    watchedState.form.currentUrl = url;
 
     const schema = yup
       .string()
       .url()
       .notOneOf(watchedState.feeds.map((feed) => feed.url));
 
-    schema.validate(watchedState.form.currentUrl)
+    schema.validate(url)
       .then(() => {
         watchedState.form.processState = 'fetching';
       })
       .then(() => {
-        axios
-          .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${watchedState.form.currentUrl}`)
-          .then((response) => {
-            const data = parse(response.data.contents);
+        makeRequest(url);
 
-            if (data.querySelector('rss')) {
-              const feedTitleEl = data.querySelector('channel > title');
-              const feedDescriptionEl = data.querySelector('channel > description');
-              const feedId = _.uniqueId();
-              const feed = {
-                url: watchedState.form.currentUrl,
-                title: feedTitleEl.textContent,
-                description: feedDescriptionEl.textContent,
-                id: feedId,
-              };
-              watchedState.feeds.push(feed);
+        const callTimeout = () => {
+          addNewPosts(url);
+          setTimeout(callTimeout, 5000);
+        };
 
-              const postsEls = data.querySelectorAll('item');
-              postsEls.forEach((postEl) => {
-                const postUrlEl = postEl.querySelector('link');
-                const postTitleEl = postEl.querySelector('title');
-                const postDescriptionEl = postEl.querySelector('description');
-
-                const post = {
-                  url: postUrlEl.textContent,
-                  title: postTitleEl.textContent,
-                  description: postDescriptionEl.textContent,
-                  id: _.uniqueId(),
-                  feedId,
-                };
-
-                watchedState.posts.push(post);
-              });
-              watchedState.form.processState = 'fetched';
-              watchedState.form.errors = [];
-            } else {
-              watchedState.form.errors = [i18nInstance.t('errors.notContainValidRss')];
-              watchedState.form.processState = 'error';
-            }
-          })
-          .catch((err) => {
-            watchedState.form.errors = [err];
-            watchedState.form.processState = 'error';
-          });
+        setTimeout(callTimeout, 5000);
       })
       .catch((err) => {
         watchedState.form.errors = err.errors;

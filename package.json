@@ -24,7 +24,7 @@
   "homepage": "https://github.com/sonyaozzy/frontend-project-lvl3#readme",
   "keywords": [],
   "devDependencies": {
-    "@webpack-cli/generators": "^2.4.2",
+    "@webpack-cli/generators": "^0.1.2",
     "css-loader": "^6.7.1",
     "eslint": "^8.11.0",
     "eslint-config-airbnb-base": "^15.0.0",

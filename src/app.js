@@ -41,7 +41,6 @@ export default () => {
 
     schema.validate(watchedState.form.currentUrl)
       .then(() => {
-        watchedState.form.errors = [];
         watchedState.form.processState = 'fetching';
       })
       .then(() => {
@@ -77,8 +76,9 @@ export default () => {
                 };
 
                 watchedState.posts.push(post);
-              })
+              });
               watchedState.form.processState = 'fetched';
+              watchedState.form.errors = [];
             } else {
               watchedState.form.errors = [i18nInstance.t('errors.notContainValidRss')];
               watchedState.form.processState = 'error';
@@ -89,8 +89,8 @@ export default () => {
             watchedState.form.processState = 'error';
           });
       })
-      .catch((e) => {
-        watchedState.form.errors = e.errors;
+      .catch((err) => {
+        watchedState.form.errors = err.errors;
         watchedState.form.processState = 'error';
       });
   });

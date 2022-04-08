@@ -27,26 +27,11 @@ const handleProcessState = (processState) => {
       break;
 
     case 'error':
-      watchedState.form.errors.forEach((errorMessage) => {
-        elements.addButton.disabled = false;
-        elements.inputField.classList.add('is-invalid');
-
-        elements.feedbackP.classList.remove('text-success');
-        elements.feedbackP.classList.add('text-danger');
-        elements.feedbackP.textContent = errorMessage;
-      });
+      elements.addButton.disabled = false;
       break;
 
     case 'fetched':
       elements.addButton.disabled = false;
-      elements.inputField.classList.remove('is-invalid');
-
-      elements.feedbackP.classList.remove('text-danger');
-      elements.feedbackP.classList.add('text-success');
-      elements.feedbackP.textContent = i18nInstance.t('success');
-
-      elements.form.reset();
-      elements.inputField.focus();
       break;
 
     default:
@@ -54,7 +39,27 @@ const handleProcessState = (processState) => {
   }
 };
 
-const renderFeeds = () => {
+const renderErrors = (errors) => {
+  if (errors.length !== 0) {
+    errors.forEach((errorMessage) => {
+      elements.inputField.classList.add('is-invalid');
+      elements.feedbackP.classList.remove('text-success');
+      elements.feedbackP.classList.add('text-danger');
+      elements.feedbackP.textContent = errorMessage;
+    });
+  } else {
+    elements.inputField.classList.remove('is-invalid');
+
+    elements.feedbackP.classList.remove('text-danger');
+    elements.feedbackP.classList.add('text-success');
+    elements.feedbackP.textContent = i18nInstance.t('success');
+
+    elements.form.reset();
+    elements.inputField.focus();
+  }
+};
+
+const renderFeeds = (feeds) => {
   elements.feeds.innerHTML = '';
 
   const divEl = document.createElement('div');
@@ -73,9 +78,9 @@ const renderFeeds = () => {
   const ulEl = document.createElement('ul');
   ulEl.classList.add('list-group', 'border-0', 'rounded-0');
 
-  watchedState.feeds.forEach((feed) => {
+  feeds.forEach((feed) => {
     const liEl = document.createElement('li');
-    liEl.classList.add('list-group-item', 'border-0', 'border-end-0')
+    liEl.classList.add('list-group-item', 'border-0', 'border-end-0');
     liEl.innerHTML = `
     <h3 class="h6 m-0">${feed.title}</h3>
     <p class="m-0 small text-black-50">${feed.description}</p>
@@ -86,7 +91,7 @@ const renderFeeds = () => {
   divEl.append(ulEl);
 };
 
-const renderPosts = () => {
+const renderPosts = (posts) => {
   elements.posts.innerHTML = '';
 
   const divEl = document.createElement('div');
@@ -105,9 +110,9 @@ const renderPosts = () => {
   const ulEl = document.createElement('ul');
   ulEl.classList.add('list-group', 'border-0', 'rounded-0');
 
-  watchedState.posts.forEach((post) => {
+  posts.forEach((post) => {
     const liEl = document.createElement('li');
-    liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0')
+    liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     liEl.innerHTML = `
     <a href="${post.url}" class="fw-bold" data-id="${post.id}" target="_blank" rel="noopener noreferrer">${post.title}</a>
     `;
@@ -123,12 +128,16 @@ const watchedState = onChange(state, (path, value) => {
       handleProcessState(value);
       break;
 
+    case 'form.errors':
+      renderErrors(value);
+      break;
+
     case 'feeds':
-      renderFeeds();
+      renderFeeds(value);
       break;
 
     case 'posts':
-      renderPosts();
+      renderPosts(value);
       break;
 
     default:

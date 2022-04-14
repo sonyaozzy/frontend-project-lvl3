@@ -5,4 +5,8 @@ export default {
   },
   feeds: [],
   posts: [],
+  uiState: {
+    posts: [],
+    modalPostId: '',
+  },
 };

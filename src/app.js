@@ -24,6 +24,19 @@ export default () => {
     });
   });
 
+  const addListenersOnPosts = () => {
+    const postEls = document.querySelectorAll('.row a');
+
+    postEls.forEach((postEl) => {
+      postEl.addEventListener('click', () => {
+        const postId = postEl.dataset.id;
+        const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
+
+        watchedState.uiState.posts = postsUiState;
+      });
+    });
+  };
+
   const makeRequest = (url) => {
     axios
       .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
@@ -50,19 +63,22 @@ export default () => {
             const postUrl = postEl.querySelector('link').textContent;
             const postTitle = postEl.querySelector('title').textContent;
             const postDescription = postEl.querySelector('description').textContent;
+            const postId = _.uniqueId();
 
             const post = {
               url: postUrl,
               title: postTitle,
               description: postDescription,
-              id: _.uniqueId(),
+              id: postId,
               feedId,
             };
 
             watchedState.posts.push(post);
+            watchedState.uiState.posts.push({ id: postId, status: 'unread' });
           });
           watchedState.form.processState = 'fetched';
           watchedState.form.errors = [];
+          addListenersOnPosts();
         } else {
           watchedState.form.errors = [i18nInstance.t('errors.notContainValidRss')];
           watchedState.form.processState = 'error';
@@ -88,6 +104,7 @@ export default () => {
           if (!watchedState.posts.some((post) => post.url === postUrl)) {
             const postDescription = postEl.querySelector('description').textContent;
             const postTitle = postEl.querySelector('title').textContent;
+            const postId = _.uniqueId();
 
             const feedId = watchedState
               .feeds
@@ -98,13 +115,15 @@ export default () => {
               url: postUrl,
               title: postTitle,
               description: postDescription,
-              id: _.uniqueId(),
+              id: postId,
               feedId,
             };
 
             watchedState.posts.push(post);
+            watchedState.uiState.posts.push({ id: postId, status: 'unread' });
           }
         });
+        addListenersOnPosts();
       });
   };
 
@@ -140,5 +159,16 @@ export default () => {
         watchedState.form.errors = err.errors;
         watchedState.form.processState = 'error';
       });
+  });
+
+  const modal = document.getElementById('modal');
+
+  modal.addEventListener('show.bs.modal', (e) => {
+    const button = e.relatedTarget;
+    const postId = button.dataset.id;
+    const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
+
+    watchedState.uiState.posts = postsUiState;
+    watchedState.uiState.modalPostId = postId;
   });
 };

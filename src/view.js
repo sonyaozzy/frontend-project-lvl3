@@ -114,12 +114,46 @@ const renderPosts = (posts) => {
     const liEl = document.createElement('li');
     liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     liEl.innerHTML = `
-    <a href="${post.url}" class="fw-bold" data-id="${post.id}" target="_blank" rel="noopener noreferrer">${post.title}</a>
+    <a href="${post.url}" data-id="${post.id}" target="_blank" rel="noopener noreferrer">${post.title}</a>
+    <button type="button" class="btn btn-outline-primary btn-sm" data-id="${post.id}" data-bs-toggle="modal" data-bs-target="#modal">View</button>
     `;
+
     ulEl.prepend(liEl);
   });
 
   divEl.append(ulEl);
+};
+
+const renderPostsUiState = (postsUiState) => {
+  postsUiState.forEach((post) => {
+    const postEl = document.querySelector(`a[data-id="${post.id}"]`);
+    switch (post.status) {
+      case 'unread':
+        postEl.classList.add('fw-bold');
+        break;
+
+      case 'read':
+        postEl.classList.remove('fw-bold');
+        postEl.classList.add('fw-normal');
+        break;
+
+      default:
+        throw new Error(`Unknown status: ${post.status}`);
+    }
+  });
+};
+
+const renderModal = (postId, watchedState) => {
+  const activePost = watchedState.posts.find((post) => post.id === postId);
+
+  const titleEl = document.querySelector('.modal-title');
+  titleEl.textContent = activePost.title;
+
+  const descriptionEl = document.querySelector('.modal-body');
+  descriptionEl.textContent = activePost.description;
+
+  const readMoreButton = document.querySelector('.full-article');
+  readMoreButton.setAttribute('href', activePost.url);
 };
 
 const watchedState = onChange(state, (path, value) => {
@@ -138,6 +172,14 @@ const watchedState = onChange(state, (path, value) => {
 
     case 'posts':
       renderPosts(value);
+      break;
+
+    case 'uiState.posts':
+      renderPostsUiState(value);
+      break;
+
+    case 'uiState.modalPostId':
+      renderModal(value, watchedState);
       break;
 
     default:

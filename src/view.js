@@ -21,14 +21,15 @@ const elements = {
 };
 
 const handleProcessState = (processState) => {
+  const addButt = document.querySelector('button[aria-label=add]'); // del
   switch (processState) {
     case 'fetching':
       elements.addButton.disabled = true;
       break;
 
     case 'error':
-      console.log(elements.addButton);
-      elements.addButton.disabled = false;
+      console.log(addButt); // del
+      addButt.disabled = false; // chng
       break;
 
     case 'fetched':
@@ -50,7 +51,7 @@ const handleProcessState = (processState) => {
 };
 
 const renderErrors = (errors) => {
-  console.log(errors);
+  console.log(errors); // del
   if (errors) {
     errors.forEach((errorMessage) => {
       elements.inputField.classList.add('is-invalid');

@@ -156,8 +156,8 @@ export default () => {
         setTimeout(callTimeout, 5000);
       })
       .catch((err) => {
-        watchedState.form.processState = 'error';
         console.log(err);
+        watchedState.form.processState = 'error';
         watchedState.form.errors = err.errors;
       });
   });

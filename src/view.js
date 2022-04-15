@@ -165,6 +165,7 @@ const watchedState = onChange(state, (path, value) => {
       break;
 
     case 'form.errors':
+      console.log(watchedState);
       renderErrors(value);
       break;
 

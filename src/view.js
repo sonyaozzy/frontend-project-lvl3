@@ -32,6 +32,15 @@ const handleProcessState = (processState) => {
 
     case 'fetched':
       elements.addButton.disabled = false;
+      elements.inputField.classList.remove('is-invalid');
+
+      elements.feedbackP.classList.remove('text-danger');
+      elements.feedbackP.classList.add('text-success');
+      elements.feedbackP.textContent = i18nInstance.t('success');
+
+      elements.form.reset();
+      elements.inputField.focus();
+
       break;
 
     default:
@@ -40,22 +49,13 @@ const handleProcessState = (processState) => {
 };
 
 const renderErrors = (errors) => {
-  if (errors.length !== 0) {
+  if (errors) {
     errors.forEach((errorMessage) => {
       elements.inputField.classList.add('is-invalid');
       elements.feedbackP.classList.remove('text-success');
       elements.feedbackP.classList.add('text-danger');
       elements.feedbackP.textContent = errorMessage;
     });
-  } else {
-    elements.inputField.classList.remove('is-invalid');
-
-    elements.feedbackP.classList.remove('text-danger');
-    elements.feedbackP.classList.add('text-success');
-    elements.feedbackP.textContent = i18nInstance.t('success');
-
-    elements.form.reset();
-    elements.inputField.focus();
   }
 };
 

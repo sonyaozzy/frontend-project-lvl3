@@ -2,6 +2,7 @@
   "name": "@hexlet/code",
   "version": "1.0.0",
   "description": "RSS aggregator",
+  "main": "./src/app.js",
   "type": "module",
   "private": true,
   "scripts": {

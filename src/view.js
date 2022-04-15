@@ -27,6 +27,7 @@ const handleProcessState = (processState) => {
       break;
 
     case 'error':
+      console.log(elements.addButton);
       elements.addButton.disabled = false;
       break;
 
@@ -49,6 +50,7 @@ const handleProcessState = (processState) => {
 };
 
 const renderErrors = (errors) => {
+  console.log(errors);
   if (errors) {
     errors.forEach((errorMessage) => {
       elements.inputField.classList.add('is-invalid');

@@ -6,6 +6,6 @@
 
 ## RSS Reader
 
-Rss Reader is a service for aggregating RSS feeds, with which it is convenient to read various sources, such as blogs. It allows you to add an unlimited number of RSS feeds, updates them itself and adds new entries to the general feed.
+RSS Reader is a service for aggregating RSS feeds, with which it is convenient to read various sources, such as blogs. It allows you to add an unlimited number of RSS feeds, updates them itself and adds new entries to the general feed.
 
 [Try it now!](https://frontend-project-lvl3-red-alpha.vercel.app/)

@@ -1,9 +1,20 @@
 import onChange from 'on-change';
 import i18next from 'i18next';
-import state from './state.js';
+// import state from './state.js';
 import ru from './locales/ru.js';
 
-const watchedState = onChange(state, (path, value) => {
+const watchedState = onChange({
+  form: {
+    errors: [],
+    processState: 'filling',
+  },
+  feeds: [],
+  posts: [],
+  uiState: {
+    posts: [],
+    modalPostId: '',
+  },
+}, (path, value) => {
   const i18nInstance = i18next.createInstance();
 
   i18nInstance.init({
@@ -50,14 +61,12 @@ const watchedState = onChange(state, (path, value) => {
   };
 
   const renderErrors = (errors) => {
-    if (errors) {
-      errors.forEach((errorMessage) => {
-        elements.inputField.classList.add('is-invalid');
-        elements.feedbackP.classList.remove('text-success');
-        elements.feedbackP.classList.add('text-danger');
-        elements.feedbackP.textContent = errorMessage;
-      });
-    }
+    errors.forEach((errorMessage) => {
+      elements.inputField.classList.add('is-invalid');
+      elements.feedbackP.classList.remove('text-success');
+      elements.feedbackP.classList.add('text-danger');
+      elements.feedbackP.textContent = errorMessage;
+    });
   };
 
   const renderFeeds = (feeds) => {

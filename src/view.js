@@ -1,14 +1,14 @@
 import onChange from 'on-change';
 import i18next from 'i18next';
 import state from './state.js';
-import en from './locales/en.js';
+import ru from './locales/ru.js';
 
 const i18nInstance = i18next.createInstance();
 
 i18nInstance.init({
-  lng: 'en',
+  lng: 'ru',
   debug: false,
-  resources: { en },
+  resources: { ru },
 });
 
 const elements = {
@@ -115,7 +115,7 @@ const renderPosts = (posts) => {
     liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
     liEl.innerHTML = `
     <a href="${post.url}" data-id="${post.id}" target="_blank" rel="noopener noreferrer">${post.title}</a>
-    <button type="button" class="btn btn-outline-primary btn-sm" data-id="${post.id}" data-bs-toggle="modal" data-bs-target="#modal">View</button>
+    <button type="button" class="btn btn-outline-primary btn-sm" data-id="${post.id}" data-bs-toggle="modal" data-bs-target="#modal">${i18nInstance.t('view')}</button>
     `;
 
     ulEl.prepend(liEl);

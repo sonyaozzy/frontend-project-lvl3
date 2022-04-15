@@ -3,16 +3,16 @@ import i18next from 'i18next';
 import axios from 'axios';
 import _ from 'lodash';
 import watchedState from './view.js';
-import en from './locales/en.js';
+import ru from './locales/ru.js';
 import parse from './parser.js';
 
 export default () => {
   const i18nInstance = i18next.createInstance();
 
   i18nInstance.init({
-    lng: 'en',
+    lng: 'ru',
     debug: false,
-    resources: { en },
+    resources: { ru },
   }).then(() => {
     yup.setLocale({
       mixed: {
@@ -84,8 +84,8 @@ export default () => {
           watchedState.form.processState = 'error';
         }
       })
-      .catch((err) => {
-        watchedState.form.errors = [err];
+      .catch(() => {
+        watchedState.form.errors = [i18nInstance.t('errors.networkError')];
         watchedState.form.processState = 'error';
       });
   };

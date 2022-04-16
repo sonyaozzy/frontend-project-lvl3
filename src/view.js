@@ -1,20 +1,8 @@
 import onChange from 'on-change';
 import i18next from 'i18next';
-// import state from './state.js';
 import ru from './locales/ru.js';
 
-const watchedState = onChange({
-  form: {
-    errors: [],
-    processState: 'filling',
-  },
-  feeds: [],
-  posts: [],
-  uiState: {
-    posts: [],
-    modalPostId: '',
-  },
-}, (path, value) => {
+const render = (state) => (path, value) => {
   const i18nInstance = i18next.createInstance();
 
   i18nInstance.init({
@@ -154,7 +142,7 @@ const watchedState = onChange({
   };
 
   const renderModal = (postId) => {
-    const activePost = watchedState.posts.find((post) => post.id === postId);
+    const activePost = state.posts.find((post) => post.id === postId);
 
     const titleEl = document.querySelector('.modal-title');
     titleEl.textContent = activePost.title;
@@ -194,6 +182,8 @@ const watchedState = onChange({
     default:
       throw new Error(`Unknown path: ${path}`);
   }
-});
+};
 
-export default watchedState;
+const watcher = (state) => onChange(state, render(state));
+
+export default watcher;

@@ -2,11 +2,26 @@ import * as yup from 'yup';
 import i18next from 'i18next';
 import axios from 'axios';
 import _ from 'lodash';
-import watchedState from './view.js';
+import watcher from './view.js';
 import ru from './locales/ru.js';
 import parse from './parser.js';
 
 export default () => {
+  const state = {
+    form: {
+      errors: [],
+      processState: 'filling',
+    },
+    feeds: [],
+    posts: [],
+    uiState: {
+      posts: [],
+      modalPostId: '',
+    },
+  };
+
+  const watchedState = watcher(state);
+
   const i18nInstance = i18next.createInstance();
 
   i18nInstance.init({

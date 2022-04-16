@@ -162,7 +162,8 @@ export default () => {
       })
       .then(() => {
         makeRequest(url);
-
+      })
+      .then(() => {
         const callTimeout = () => {
           addNewPosts(url);
           setTimeout(callTimeout, 5000);
@@ -171,7 +172,6 @@ export default () => {
         setTimeout(callTimeout, 5000);
       })
       .catch((err) => {
-        console.log(err);
         watchedState.form.processState = 'error';
         watchedState.form.errors = err.errors;
       });

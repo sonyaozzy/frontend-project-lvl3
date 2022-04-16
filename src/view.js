@@ -22,6 +22,10 @@ const render = (state) => (path, value) => {
 
   const handleProcessState = (processState) => {
     switch (processState) {
+      case 'validating':
+        elements.addButton.disabled = true;
+        break;
+
       case 'fetching':
         elements.addButton.disabled = true;
         break;

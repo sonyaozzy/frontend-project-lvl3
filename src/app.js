@@ -45,6 +45,7 @@ export default () => {
       const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
 
       watchedState.uiState.posts = postsUiState;
+      watchedState.uiState.modalPostId = postId;
     });
   };
 
@@ -119,14 +120,5 @@ export default () => {
         }
         watchedState.form.processState = 'error';
       });
-  });
-
-  const modal = document.getElementById('modal');
-
-  modal.addEventListener('show.bs.modal', (e) => {
-    const button = e.relatedTarget;
-    const postId = button.dataset.id;
-
-    watchedState.uiState.modalPostId = postId;
   });
 };

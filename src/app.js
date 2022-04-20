@@ -43,7 +43,7 @@ export default () => {
     postContainerEl.addEventListener('click', (event) => {
       const postId = event.target.dataset.id;
       const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
-
+      console.log(watchedState.posts);
       watchedState.uiState.posts = postsUiState;
       if (event.target.dataset.bsToggle === 'modal') {
         watchedState.uiState.modalPostId = postId;

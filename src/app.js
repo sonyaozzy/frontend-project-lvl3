@@ -1,7 +1,6 @@
 import * as yup from 'yup';
 import i18next from 'i18next';
 import axios from 'axios';
-import _ from 'lodash';
 import watcher from './view.js';
 import ru from './locales/ru.js';
 import parse from './parser.js';
@@ -9,7 +8,7 @@ import parse from './parser.js';
 export default () => {
   const state = {
     form: {
-      errors: [],
+      error: '',
       processState: 'filling',
     },
     feeds: [],
@@ -40,102 +39,31 @@ export default () => {
   });
 
   const addListenersOnPosts = () => {
-    const postEls = document.querySelectorAll('.row a');
+    const postContainerEl = document.querySelector('.posts ul');
+    postContainerEl.addEventListener('click', (event) => {
+      const postId = event.target.dataset.id;
+      const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
 
-    postEls.forEach((postEl) => {
-      postEl.addEventListener('click', () => {
-        const postId = postEl.dataset.id;
-        const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
-
-        watchedState.uiState.posts = postsUiState;
-      });
+      watchedState.uiState.posts = postsUiState;
     });
-  };
-
-  const makeRequest = (url) => {
-    axios
-      .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-      .then((response) => {
-        const data = parse(response.data.contents);
-
-        if (data.querySelector('rss')) {
-          const feedTitle = data.querySelector('channel > title').textContent;
-          const feedDescription = data.querySelector('channel > description').textContent;
-          const feedId = _.uniqueId();
-
-          const feed = {
-            url,
-            title: feedTitle,
-            description: feedDescription,
-            id: feedId,
-          };
-
-          watchedState.feeds.push(feed);
-
-          const postsEls = data.querySelectorAll('item');
-
-          postsEls.forEach((postEl) => {
-            const postUrl = postEl.querySelector('link').textContent;
-            const postTitle = postEl.querySelector('title').textContent;
-            const postDescription = postEl.querySelector('description').textContent;
-            const postId = _.uniqueId();
-
-            const post = {
-              url: postUrl,
-              title: postTitle,
-              description: postDescription,
-              id: postId,
-              feedId,
-            };
-
-            watchedState.posts.push(post);
-            watchedState.uiState.posts.push({ id: postId, status: 'unread' });
-          });
-          watchedState.form.processState = 'fetched';
-          watchedState.form.errors = [];
-          addListenersOnPosts();
-        } else {
-          watchedState.form.errors = [i18nInstance.t('errors.notContainValidRss')];
-          watchedState.form.processState = 'error';
-        }
-      })
-      .catch(() => {
-        watchedState.form.errors = [i18nInstance.t('errors.networkError')];
-        watchedState.form.processState = 'error';
-      });
   };
 
   const addNewPosts = (url) => {
     axios
       .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
       .then((response) => {
-        const data = parse(response.data.contents);
+        const { posts } = parse(response.data.contents, url);
 
-        const postsEls = data.querySelectorAll('item');
-
-        postsEls.forEach((postEl) => {
-          const postUrl = postEl.querySelector('link').textContent;
-
-          if (!watchedState.posts.some((post) => post.url === postUrl)) {
-            const postDescription = postEl.querySelector('description').textContent;
-            const postTitle = postEl.querySelector('title').textContent;
-            const postId = _.uniqueId();
-
+        posts.forEach((post) => {
+          if (!watchedState.posts.some((watchedPost) => watchedPost.url === post.url)) {
             const feedId = watchedState
               .feeds
               .find((feed) => feed.url === url)
               .id;
 
-            const post = {
-              url: postUrl,
-              title: postTitle,
-              description: postDescription,
-              id: postId,
-              feedId,
-            };
-
+            post.feedId = feedId;
             watchedState.posts.push(post);
-            watchedState.uiState.posts.push({ id: postId, status: 'unread' });
+            watchedState.uiState.posts.push({ id: post.id, status: 'unread' });
           }
         });
         addListenersOnPosts();
@@ -159,9 +87,21 @@ export default () => {
     schema.validate(url)
       .then(() => {
         watchedState.form.processState = 'fetching';
+        return axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`);
       })
-      .then(() => {
-        makeRequest(url);
+      .then((response) => {
+        const { feed, posts } = parse(response.data.contents, url);
+
+        watchedState.feeds.push(feed);
+
+        posts.forEach((post) => {
+          watchedState.posts.push(post);
+          watchedState.uiState.posts.push({ id: post.id, status: 'unread' });
+        });
+
+        watchedState.form.processState = 'fetched';
+        watchedState.form.error = '';
+        addListenersOnPosts();
       })
       .then(() => {
         const callTimeout = () => {
@@ -172,8 +112,13 @@ export default () => {
         setTimeout(callTimeout, 5000);
       })
       .catch((err) => {
+        console.log(err.message);
+        if (err.message === 'Network Error') {
+          watchedState.form.error = i18nInstance.t('errors.networkError');
+        } else {
+          watchedState.form.error = err.message;
+        }
         watchedState.form.processState = 'error';
-        watchedState.form.errors = err.errors;
       });
   });
 
@@ -182,9 +127,7 @@ export default () => {
   modal.addEventListener('show.bs.modal', (e) => {
     const button = e.relatedTarget;
     const postId = button.dataset.id;
-    const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
 
-    watchedState.uiState.posts = postsUiState;
     watchedState.uiState.modalPostId = postId;
   });
 };

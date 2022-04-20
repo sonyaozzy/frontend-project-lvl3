@@ -42,7 +42,7 @@ const render = (state) => (path, value) => {
         elements.feedbackP.classList.add('text-success');
         elements.feedbackP.textContent = i18nInstance.t('success');
 
-        elements.form.reset();
+        elements.inputField.value = '';
         elements.inputField.focus();
 
         break;
@@ -52,13 +52,13 @@ const render = (state) => (path, value) => {
     }
   };
 
-  const renderErrors = (errors) => {
-    errors.forEach((errorMessage) => {
+  const renderError = (error) => {
+    if (error !== '') {
       elements.inputField.classList.add('is-invalid');
       elements.feedbackP.classList.remove('text-success');
       elements.feedbackP.classList.add('text-danger');
-      elements.feedbackP.textContent = errorMessage;
-    });
+      elements.feedbackP.textContent = error;
+    }
   };
 
   const renderFeeds = (feeds) => {
@@ -83,10 +83,17 @@ const render = (state) => (path, value) => {
     feeds.forEach((feed) => {
       const liEl = document.createElement('li');
       liEl.classList.add('list-group-item', 'border-0', 'border-end-0');
-      liEl.innerHTML = `
-    <h3 class="h6 m-0">${feed.title}</h3>
-    <p class="m-0 small text-black-50">${feed.description}</p>
-    `;
+
+      const h3El = document.createElement('h3');
+      h3El.classList.add('h6', 'm-0');
+      h3El.textContent = feed.title;
+      liEl.append(h3El);
+
+      const pEl = document.createElement('p');
+      pEl.classList.add('m-0', 'small', 'text-black-50');
+      pEl.textContent = feed.description;
+      liEl.append(pEl);
+
       ulEl.prepend(liEl);
     });
 
@@ -115,10 +122,23 @@ const render = (state) => (path, value) => {
     posts.forEach((post) => {
       const liEl = document.createElement('li');
       liEl.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-start', 'border-0', 'border-end-0');
-      liEl.innerHTML = `
-    <a href="${post.url}" data-id="${post.id}" target="_blank" rel="noopener noreferrer">${post.title}</a>
-    <button type="button" class="btn btn-outline-primary btn-sm" data-id="${post.id}" data-bs-toggle="modal" data-bs-target="#modal">${i18nInstance.t('view')}</button>
-    `;
+
+      const aEl = document.createElement('a');
+      aEl.setAttribute('href', post.url);
+      aEl.dataset.id = post.id;
+      aEl.setAttribute('target', '_blank');
+      aEl.setAttribute('rel', 'noopener noreferrer');
+      aEl.textContent = post.title;
+      liEl.append(aEl);
+
+      const buttonEl = document.createElement('button');
+      buttonEl.setAttribute('type', 'button');
+      buttonEl.classList.add('btn', 'btn-outline-primary', 'btn-sm');
+      buttonEl.dataset.id = post.id;
+      buttonEl.dataset.bsToggle = 'modal';
+      buttonEl.dataset.bsTarget = '#modal';
+      buttonEl.textContent = i18nInstance.t('view');
+      liEl.append(buttonEl);
 
       ulEl.prepend(liEl);
     });
@@ -163,8 +183,8 @@ const render = (state) => (path, value) => {
       handleProcessState(value);
       break;
 
-    case 'form.errors':
-      renderErrors(value);
+    case 'form.error':
+      renderError(value);
       break;
 
     case 'feeds':

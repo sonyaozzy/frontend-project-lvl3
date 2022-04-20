@@ -24,18 +24,23 @@ const render = (state) => (path, value) => {
     switch (processState) {
       case 'validating':
         elements.addButton.disabled = true;
+        elements.inputField.readOnly = true;
         break;
 
       case 'fetching':
         elements.addButton.disabled = true;
+        elements.inputField.readOnly = true;
         break;
 
       case 'error':
         elements.addButton.disabled = false;
+        elements.inputField.removeAttribute('readonly');
         break;
 
       case 'fetched':
         elements.addButton.disabled = false;
+        elements.inputField.removeAttribute('readonly');
+
         elements.inputField.classList.remove('is-invalid');
 
         elements.feedbackP.classList.remove('text-danger');

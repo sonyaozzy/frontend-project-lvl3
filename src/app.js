@@ -112,7 +112,6 @@ export default () => {
         setTimeout(callTimeout, 5000);
       })
       .catch((err) => {
-        console.log(err.message);
         if (err.message === 'Network Error') {
           watchedState.form.error = i18nInstance.t('errors.networkError');
         } else {

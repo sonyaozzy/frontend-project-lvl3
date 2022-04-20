@@ -45,7 +45,9 @@ export default () => {
       const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
 
       watchedState.uiState.posts = postsUiState;
-      watchedState.uiState.modalPostId = postId;
+      if (event.target.dataset.bsToggle === 'modal') {
+        watchedState.uiState.modalPostId = postId;
+      }
     });
   };
 

@@ -171,8 +171,10 @@ const render = (state) => (path, value) => {
   };
 
   const renderModal = (postId) => {
-    const activePost = state.posts.find((post) => post.id === postId);
-
+    const activePost = state.posts.find((post) => post.id === postId.toString());
+    console.log(postId); // to remove
+    console.log(state); // to remove
+    console.log(activePost); // to remove
     const titleEl = document.querySelector('.modal-title');
     titleEl.textContent = activePost.title;
 

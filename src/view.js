@@ -110,7 +110,7 @@ const render = (state) => (path, value) => {
 
     const divEl = document.createElement('div');
     divEl.classList.add('card', 'border-0');
-    elements.posts.append(divEl);
+    elements.posts.prepend(divEl);
 
     const divTitleEl = document.createElement('div');
     divTitleEl.classList.add('card-body');
@@ -119,7 +119,7 @@ const render = (state) => (path, value) => {
     const h2El = document.createElement('h2');
     h2El.classList.add('card-title', 'h4');
     h2El.textContent = i18nInstance.t('posts');
-    divTitleEl.append(h2El);
+    divTitleEl.prepend(h2El);
 
     const ulEl = document.createElement('ul');
     ulEl.classList.add('list-group', 'border-0', 'rounded-0');
@@ -145,7 +145,7 @@ const render = (state) => (path, value) => {
       buttonEl.textContent = i18nInstance.t('view');
       liEl.append(buttonEl);
 
-      ulEl.prepend(liEl);
+      ulEl.append(liEl);
     });
 
     divEl.append(ulEl);

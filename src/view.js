@@ -1,16 +1,6 @@
 import onChange from 'on-change';
-import i18next from 'i18next';
-import ru from './locales/ru.js';
 
-const i18nInstance = i18next.createInstance();
-
-i18nInstance.init({
-  lng: 'ru',
-  debug: false,
-  resources: { ru },
-});
-
-const handleProcessState = (processState, elements) => {
+const handleProcessState = (processState, elements, i18nInstance) => {
   switch (processState) {
     case 'validating':
       elements.addButton.disabled = true;
@@ -56,7 +46,7 @@ const renderError = (error, elements) => {
   }
 };
 
-const renderFeeds = (feeds, elements) => {
+const renderFeeds = (feeds, elements, i18nInstance) => {
   elements.feeds.innerHTML = '';
 
   const divEl = document.createElement('div');
@@ -95,7 +85,7 @@ const renderFeeds = (feeds, elements) => {
   divEl.append(ulEl);
 };
 
-const renderPosts = (posts, elements) => {
+const renderPosts = (posts, elements, i18nInstance) => {
   elements.posts.innerHTML = '';
 
   const divEl = document.createElement('div');
@@ -168,7 +158,7 @@ const renderModal = (postId, state, elements) => {
   elements.modal.readMoreButton.setAttribute('href', activePost.url);
 };
 
-const render = (state) => (path, value) => {
+const render = (state, i18nInstance) => (path, value) => {
   const elements = {
     form: document.querySelector('form'),
     inputField: document.getElementById('url-input'),
@@ -185,7 +175,7 @@ const render = (state) => (path, value) => {
 
   switch (path) {
     case 'form.processState':
-      handleProcessState(value, elements);
+      handleProcessState(value, elements, i18nInstance);
       break;
 
     case 'form.error':
@@ -193,11 +183,11 @@ const render = (state) => (path, value) => {
       break;
 
     case 'feeds':
-      renderFeeds(value, elements);
+      renderFeeds(value, elements, i18nInstance);
       break;
 
     case 'posts':
-      renderPosts(value, elements);
+      renderPosts(value, elements, i18nInstance);
       break;
 
     case 'uiState.posts':
@@ -213,6 +203,6 @@ const render = (state) => (path, value) => {
   }
 };
 
-const watcher = (state) => onChange(state, render(state));
+const watcher = (state, i18nInstance) => onChange(state, render(state, i18nInstance));
 
 export default watcher;

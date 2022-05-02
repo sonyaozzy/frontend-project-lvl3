@@ -1,6 +1,7 @@
 import * as yup from 'yup';
 import i18next from 'i18next';
 import axios from 'axios';
+import _ from 'lodash';
 import watcher from './view.js';
 import ru from './locales/ru.js';
 import parse from './parser.js';
@@ -19,8 +20,6 @@ export default () => {
     },
   };
 
-  const watchedState = watcher(state);
-
   const i18nInstance = i18next.createInstance();
 
   i18nInstance.init({
@@ -38,6 +37,8 @@ export default () => {
     });
   });
 
+  const watchedState = watcher(state, i18nInstance);
+
   const addListenersOnPosts = () => {
     const postContainerEl = document.querySelector('.posts ul');
     postContainerEl.addEventListener('click', (event) => {
@@ -50,27 +51,26 @@ export default () => {
     });
   };
 
-  const addNewPosts = (url) => {
-    axios
-      .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
-      .then((response) => {
-        const { posts } = parse(response.data.contents, url);
+  const addNewPosts = (url) => axios
+    .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
+    .then((response) => {
+      const { posts } = parse(response.data.contents, url);
 
-        posts.forEach((post) => {
-          if (!watchedState.posts.some((watchedPost) => watchedPost.url === post.url)) {
-            const feedId = watchedState
-              .feeds
-              .find((feed) => feed.url === url)
-              .id;
+      const feedId = watchedState
+        .feeds
+        .find((feed) => feed.url === url)
+        .id;
 
-            post.feedId = feedId;
-            watchedState.posts.push(post);
-            watchedState.uiState.posts.push({ id: post.id, status: 'unread' });
-          }
-        });
-        addListenersOnPosts();
+      posts.forEach((post) => {
+        if (!watchedState.posts.some((watchedPost) => watchedPost.url === post.url)) {
+          const postId = _.uniqueId();
+
+          watchedState.posts.push({ ...post, id: postId, feedId });
+          watchedState.uiState.posts.push({ id: postId, status: 'unread' });
+        }
       });
-  };
+      addListenersOnPosts();
+    });
 
   const formEl = document.querySelector('form');
 
@@ -94,31 +94,34 @@ export default () => {
       .then((response) => {
         const { feed, posts } = parse(response.data.contents, url);
 
-        watchedState.feeds.push(feed);
+        const feedId = _.uniqueId();
+        watchedState.feeds.push({ ...feed, id: feedId });
 
         posts.forEach((post) => {
-          watchedState.posts.push(post);
-          watchedState.uiState.posts.push({ id: post.id, status: 'unread' });
+          const postId = _.uniqueId();
+
+          watchedState.posts.push({ ...post, id: postId, feedId });
+          watchedState.uiState.posts.push({ id: postId, status: 'unread' });
         });
 
         watchedState.form.processState = 'fetched';
         watchedState.form.error = '';
         addListenersOnPosts();
-      })
-      .then(() => {
-        const callTimeout = () => {
-          addNewPosts(url);
-          setTimeout(callTimeout, 5000);
-        };
+
+        const callTimeout = () => addNewPosts(url)
+          .finally(() => setTimeout(callTimeout, 5000));
 
         setTimeout(callTimeout, 5000);
       })
       .catch((err) => {
         if (err.message === 'Network Error') {
           watchedState.form.error = i18nInstance.t('errors.networkError');
+        } else if (err.message === 'NotValidRss') {
+          watchedState.form.error = i18nInstance.t('errors.notContainValidRss');
         } else {
           watchedState.form.error = err.message;
         }
+
         watchedState.form.processState = 'error';
       });
   });

@@ -51,6 +51,13 @@ export default () => {
     });
   };
 
+  const addPostInState = (post, feedId) => {
+    const postId = _.uniqueId();
+
+    watchedState.posts.push({ ...post, id: postId, feedId });
+    watchedState.uiState.posts.push({ id: postId, status: 'unread' });
+  };
+
   const addNewPosts = (url) => axios
     .get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(url)}`)
     .then((response) => {
@@ -63,10 +70,7 @@ export default () => {
 
       posts.forEach((post) => {
         if (!watchedState.posts.some((watchedPost) => watchedPost.url === post.url)) {
-          const postId = _.uniqueId();
-
-          watchedState.posts.push({ ...post, id: postId, feedId });
-          watchedState.uiState.posts.push({ id: postId, status: 'unread' });
+          addPostInState(post, feedId);
         }
       });
       addListenersOnPosts();
@@ -98,10 +102,7 @@ export default () => {
         watchedState.feeds.push({ ...feed, id: feedId });
 
         posts.forEach((post) => {
-          const postId = _.uniqueId();
-
-          watchedState.posts.push({ ...post, id: postId, feedId });
-          watchedState.uiState.posts.push({ id: postId, status: 'unread' });
+          addPostInState(post, feedId);
         });
 
         watchedState.form.processState = 'fetched';

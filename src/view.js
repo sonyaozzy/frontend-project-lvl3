@@ -1,4 +1,6 @@
 import onChange from 'on-change';
+import i18next from 'i18next';
+import ru from './locales/ru.js';
 
 const handleProcessState = (processState, elements, i18nInstance) => {
   switch (processState) {
@@ -37,12 +39,12 @@ const handleProcessState = (processState, elements, i18nInstance) => {
   }
 };
 
-const renderError = (error, elements) => {
+const renderError = (error, elements, i18nInstance) => {
   if (error !== '') {
     elements.inputField.classList.add('is-invalid');
     elements.feedbackP.classList.remove('text-success');
     elements.feedbackP.classList.add('text-danger');
-    elements.feedbackP.textContent = error;
+    elements.feedbackP.textContent = i18nInstance.t(`errors.${error}`);
   }
 };
 
@@ -158,7 +160,15 @@ const renderModal = (postId, state, elements) => {
   elements.modal.readMoreButton.setAttribute('href', activePost.url);
 };
 
-const render = (state, i18nInstance) => (path, value) => {
+const render = (state) => (path, value) => {
+  const i18nInstance = i18next.createInstance();
+
+  i18nInstance.init({
+    lng: 'ru',
+    debug: false,
+    resources: { ru },
+  });
+
   const elements = {
     form: document.querySelector('form'),
     inputField: document.getElementById('url-input'),
@@ -179,7 +189,7 @@ const render = (state, i18nInstance) => (path, value) => {
       break;
 
     case 'form.error':
-      renderError(value, elements);
+      renderError(value, elements, i18nInstance);
       break;
 
     case 'feeds':
@@ -203,6 +213,6 @@ const render = (state, i18nInstance) => (path, value) => {
   }
 };
 
-const watcher = (state, i18nInstance) => onChange(state, render(state, i18nInstance));
+const watcher = (state) => onChange(state, render(state));
 
 export default watcher;

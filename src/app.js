@@ -1,9 +1,7 @@
 import * as yup from 'yup';
-import i18next from 'i18next';
 import axios from 'axios';
 import _ from 'lodash';
 import watcher from './view.js';
-import ru from './locales/ru.js';
 import parse from './parser.js';
 
 export default () => {
@@ -20,27 +18,19 @@ export default () => {
     },
   };
 
-  const i18nInstance = i18next.createInstance();
-
-  i18nInstance.init({
-    lng: 'ru',
-    debug: false,
-    resources: { ru },
-  }).then(() => {
-    yup.setLocale({
-      mixed: {
-        notOneOf: i18nInstance.t('errors.dublicateUrl'),
-      },
-      string: {
-        url: i18nInstance.t('errors.invalidUrl'),
-      },
-    });
+  yup.setLocale({
+    mixed: {
+      notOneOf: 'dublicateUrl',
+    },
+    string: {
+      url: 'invalidUrl',
+    },
   });
 
-  const watchedState = watcher(state, i18nInstance);
+  const watchedState = watcher(state);
 
   const addListenersOnPosts = () => {
-    const postContainerEl = document.querySelector('.posts ul');
+    const postContainerEl = document.querySelector('.posts');
     postContainerEl.addEventListener('click', (event) => {
       const postId = event.target.dataset.id;
       const postsUiState = watchedState.uiState.posts.map((post) => (post.id === postId ? { id: postId, status: 'read' } : post));
@@ -50,6 +40,8 @@ export default () => {
       }
     });
   };
+
+  addListenersOnPosts();
 
   const addPostInState = (post, feedId) => {
     const postId = _.uniqueId();
@@ -73,7 +65,6 @@ export default () => {
           addPostInState(post, feedId);
         }
       });
-      addListenersOnPosts();
     });
 
   const formEl = document.querySelector('form');
@@ -107,7 +98,6 @@ export default () => {
 
         watchedState.form.processState = 'fetched';
         watchedState.form.error = '';
-        addListenersOnPosts();
 
         const callTimeout = () => addNewPosts(url)
           .finally(() => setTimeout(callTimeout, 5000));
@@ -116,9 +106,9 @@ export default () => {
       })
       .catch((err) => {
         if (err.message === 'Network Error') {
-          watchedState.form.error = i18nInstance.t('errors.networkError');
+          watchedState.form.error = 'networkError';
         } else if (err.message === 'NotValidRss') {
-          watchedState.form.error = i18nInstance.t('errors.notContainValidRss');
+          watchedState.form.error = 'notContainValidRss';
         } else {
           watchedState.form.error = err.message;
         }

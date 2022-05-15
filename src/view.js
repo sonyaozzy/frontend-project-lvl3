@@ -1,6 +1,6 @@
 import onChange from 'on-change';
 import i18next from 'i18next';
-import ru from './locales/ru.js';
+import en from './locales/en.js';
 
 const handleProcessState = (processState, elements, i18nInstance) => {
   switch (processState) {
@@ -164,9 +164,9 @@ const render = (state) => (path, value) => {
   const i18nInstance = i18next.createInstance();
 
   i18nInstance.init({
-    lng: 'ru',
+    lng: 'en',
     debug: false,
-    resources: { ru },
+    resources: { en },
   });
 
   const elements = {
